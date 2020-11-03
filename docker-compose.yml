@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:alpine
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - nginx_network
+
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+        - ./api:/api
+    networks:
+      - nginx_network
+  db:
+    container_name: db
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
+    hostname: db
+    volumes: 
+      - ./db:/docker-entrypoint-initdb.d
+
+
+networks:
+  nginx_network:
+    driver: bridge
