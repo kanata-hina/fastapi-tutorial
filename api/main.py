@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
 import psycopg2
@@ -53,10 +53,12 @@ async def getAllTasks(id: int, task_id: int):
     cur = conn.cursor()
     cur.execute('SELECT * FROM task where user_id = ' + str(id) + ' and id = ' + str(task_id))
     rows = cur.fetchall()
+    if len(rows) == 0:
+        raise HTTPException(status_code=500, detail="task id not found")
     print(rows)
     cur.close()
     conn.close()
-    return [{"item_id": id}]
+    return {"task_id": rows[0][0], "title": rows[0][2], "description": rows[0][3]}
 
 @api.put('/{id}/tasks/{task_id}')
 async def getAllTasks(id: int, task_id: int, task: Task):
